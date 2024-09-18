@@ -1,0 +1,151 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Labeling App</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            color: #343a40;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1, h2 {
+            color: #007bff;
+        }
+
+        h1 {
+            margin-top: 30px;
+        }
+
+        .user-container {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            margin-top: 20px;
+        }
+
+        .user-list {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .user-list-item {
+            margin-bottom: 20px;
+            border: 1px solid #ced4da;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #ffffff;
+        }
+
+        .progress-info {
+            margin-bottom: 10px;
+        }
+
+        .user-name {
+            font-weight: bold;
+        }
+
+        form {
+            margin-bottom: 20px;
+        }
+
+        label {
+            margin-bottom: 10px;
+        }
+
+        input {
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .instructions-container {
+            max-width: 600px;
+            text-align: left;
+            margin-bottom: 30px;
+        }
+
+        .instructions {
+            text-align: left;
+            margin-bottom: 30px;
+        }
+
+        .instructions ul {
+            padding: 0; /* Remove padding to eliminate the box around each list item */
+        }
+
+        .instructions li {
+            margin-bottom: 10px;
+        }
+
+        .instructions li::before {
+            content: '\2022'; /* Bullet point character */
+            color: #007bff;
+            display: inline-block;
+            width: 1em;
+            margin-left: -1em;
+            margin-right: 5px; /* Add margin to separate bullet point from text */
+        }
+    </style>
+</head>
+<body>
+    <h1>Image Labeling App</h1>
+    <h3><a href="" target="_blank">For detailed instructions click here</a>
+    </h3>
+    
+    <div class="user-container">
+        <form method="post">
+            <label for="user_name">Enter your Name:</label>
+            <input type="text" name="user_name" required />
+            <button type="submit">Save</button>
+        </form>
+
+        <h2>Or choose your name from the list of current users</h2>
+        <ul class="user-list">
+            {% for user in users %}
+            <li class="user-list-item">
+                <div class="progress-info">
+                    <span class="user-name">{{ user }}</span> - Progress: {{ users[user]['progress'] }} / {{ total }}
+                </div>
+                <a href="/label/{{user}}">Resume</a>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="instructions-container">
+        <h2>Quick Instructions for Image Labeling</h2>
+        <div class="instructions">
+            <ul>
+                <li>Assign probabilities to each of the 4 classes based on your best judgment.</li>
+                <li>Use radio buttons (0.25, 0.5, 0.75, 1.0) to indiimagee your confidence level.</li>
+                <li>Check the ambiguous box if unsure; it's auto-checked at the beginning by default and gets unchecked once you make a selection.</li>
+                <li>You can check multiple classes as long as the total probability across all classes doesn't exceed 1.</li>
+                <li>You can classify as many images as you want at a time. Your progress is automatically saved. You can resume from where you left off.</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

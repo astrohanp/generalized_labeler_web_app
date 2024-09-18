@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Image Labeling</title>
+    <style>
+      /* CSS styles for the form */
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f3f3f3; /* Light gray background */
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        color: #333; /* Dark gray text color */
+      }
+
+      h1,
+      h2 {
+        text-align: center;
+        color: #34495e; /* Dark blue-gray heading color */
+      }
+
+      .container {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start; /* Align items to the start (top) */
+        width: 80%; /* Adjust the width as needed */
+        margin-top: 20px;
+      }
+
+      .image-container {
+        flex: 1; /* Take up available space */
+        margin-right: 20px; /* Add some spacing between image and table */
+      }
+
+      .image-container img {
+        max-width: 100%;
+        height: auto;
+      }
+
+      .table-container {
+        flex: 1; /* Take up available space */
+      }
+
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Light shadow */
+        background-color: #f9f9f9; /* Slightly off-white background */
+        border: 1px solid #e1e1e1; /* Very light gray border */
+      }
+
+      th {
+        background-color: #2c3e50; /* Darker color for the top row background */
+        color: white; /* White text color for better contrast */
+      }
+
+      th,
+      td {
+        padding: 15px;
+        text-align: center;
+        border: 1px solid #e1e1e1;
+      }
+
+      /* New CSS rule for the first column (class names) */
+      td:first-child {
+        background-color: #1b5792; /* Slightly darker color for the first column */
+        color: white; /* White text color for better contrast */
+      }
+
+      .checkbox-button label {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        text-align: center;
+        border: 1px solid #d2d2d2; /* Light border color */
+        cursor: pointer;
+        margin: 2px;
+        line-height: 20px;
+      }
+
+      .checkbox-button input[type="checkbox"]:checked + label::before {
+        content: "\25A0"; /* Unicode character for a solid square */
+        font-size: 16px;
+        color: #2484b1; /* Darker green color */
+      }
+
+      .radio-button input[type="radio"] {
+        display: none;
+      }
+
+      .radio-button label {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        text-align: center;
+        border: 1px solid #d2d2d2; /* Light border color */
+        cursor: pointer;
+        margin: 2px;
+        line-height: 20px;
+        border-radius: 50%;
+      }
+
+      .radio-button input[type="radio"]:checked + label::before {
+        content: "•";
+        font-size: 16px; /* Larger font size */
+        color: #2ecc71; /* Darker green color */
+      }
+
+      .class-label {
+        cursor: pointer; /* Add this line to make class labels clickable */
+      }
+
+      button {
+        padding: 10px 20px;
+        margin: 10px;
+        background-color: #2ecc71; /* Green button color */
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+      }
+
+      button:hover {
+        background-color: #27ae60; /* Darker green on hover */
+      }
+      .progress-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .progress-label {
+            margin-right: 10px;
+            color: #007bff; /* Dark blue color */
+        }
+
+        .home-button {
+            padding: 10px 20px;
+            background-color: #007bff; /* Dark blue color */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .home-button:hover {
+            background-color: #0056b3; /* Slightly darker blue on hover */
+        }
+
+
+    </style>
+<script>
+      const submitted = {};
+
+      function onRadioChange(event) {
+          const el = event.target;
+          const label = el.name.split('_')[0]; // Extract class_label from the name
+          const confidence = parseFloat(el.value);
+
+          // Uncheck the Ambiguous checkbox when any radio button other than 0 is selected
+          const ambiguousCheckbox = document.getElementById("Ambiguous");
+          if (el.value !== "0") {
+              ambiguousCheckbox.checked = false;
+          }
+
+          if (!checkValid()) {
+              el.checked = false;
+              const radioToCheck = document.querySelector(
+                  `input[type="radio"][name="${label}_0"]`
+              );
+              if (radioToCheck) {
+                  radioToCheck.checked = true;
+              }
+              alert("Couldn't select this confidence, sum of confidence should be <= 1");
+          } else {
+              submitted[label] = confidence;
+          }
+
+          // Check if all 0.25 radio buttons are selected in each row
+          const all025Selected = Array.from(
+              document.querySelectorAll(`.class-radio[name^="${label}_"][value="0.25"]:checked`)
+          );
+          if (all025Selected.length == 4) {
+              ambiguousCheckbox.checked = true;
+          } else {
+              ambiguousCheckbox.checked = false;
+          }
+          }
+
+          function checkValid() {
+              const currentSum = Array.from(
+                  document.querySelectorAll(".class-radio:checked")
+              ).reduce((acc, radio) => acc + parseFloat(radio.value), 0);
+              return currentSum <= 1;
+          }
+
+    </script>
+  </head>
+  <body>
+    <h1>Image Labeling App</h1>
+    <h2>Welcome, {{ user_name }}!</h2>
+    
+    <!-- Display user's progress and Home button -->
+    <div class="progress-container">
+        <p class="progress-label">Progress: {{ progress }} / {{ total }}</p>
+        <form method="post">
+        <button class="home-button" type="submit" name="action" value="home">Home</button>
+    </div>
+
+    <div class="container">
+      <div class="image-container">
+        <!-- Display and label an image here -->
+        <img src="/static/images/{{image}}" alt="Image to label" />
+      </div>
+      <div class="table-container">
+        
+          <table>
+            <tr>
+              <th>Class/Confidence</th>
+              {% for confidence in confidences %}
+              <th>{{ confidence }}</th>
+              {% endfor %}
+            </tr>
+            {% for class_label in class_labels %}
+            <tr>
+              <td class="class-label">{{ class_label }}</td>
+              {% for confidence in confidences %}
+              <td class="checkbox-button">
+                <input type="radio" name="{{ class_label }}" value="{{
+                confidence }}" class="class-radio"
+                onchange="onRadioChange(event)" {% if loop.index == 1%}checked{%
+                endif %} />
+              </td>
+              {% endfor %}
+            </tr>
+            {% endfor %}
+            <tr>
+              <td class="class-label">Ambiguous</td>
+              <td class="checkbox-button">
+                <input
+                  type="checkbox"
+                  name="Ambiguous"
+                  value="Ambiguous"
+                  id="Ambiguous"
+                  checked
+                />
+              </td>
+            </tr>
+          </table>
+          <br />
+          <div class="centered">
+            <!-- <button id="resetButton" type="button">Reset to Default</button> -->
+            <!-- Previous and Next buttons only, no Submit button -->
+            <!-- <button type="submit" name="action" value="home">Home</button> -->
+            <button type="submit" name="action" value="previous">
+              Previous
+            </button>
+            <button type="submit" name="action" value="next">Next</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>
